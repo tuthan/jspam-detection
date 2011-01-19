@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
  import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jnetpcap.JBufferHandler;
 import org.jnetpcap.JCaptureHeader;
 import org.jnetpcap.Pcap;
@@ -35,6 +34,7 @@ import org.jnetpcap.nio.JMemory;
 import org.jnetpcap.packet.JPacket;
 import org.jnetpcap.packet.JPacketHandler;
 import org.jnetpcap.protocol.lan.Ethernet;
+import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import sun.nio.ch.SocketOpts;
 import sun.nio.ch.SocketOpts.IP.TCP;
@@ -91,7 +91,7 @@ public class Main {
          System.out.println(alldevice.get(I).getDescription());
          //open nic  to capture packet
          int snaplen =64*2048;
-         int promicious= Pcap.MODE_PROMISCUOUS;
+         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
          int timeout= 10*1000;
          Pcap pcap= Pcap.openLive(netInterface.getName(), snaplen, promicious, timeout, err);
          if(pcap==null)
@@ -104,27 +104,41 @@ public class Main {
 
    JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
    {
-
+     Tcp tcp = new Tcp();
+       final PcapPacket packet = new PcapPacket(JMemory.POINTER);
 	public void nextPacket(PcapHeader header, JBuffer buffer, String user)
         {
 	Timestamp timestamp =  new Timestamp(header.timestampInMillis());
-        final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+      
 	 packet.peer(buffer);
          packet.getCaptureHeader().peerTo(header, 0);
          packet.scan(Ethernet.ID);
-         Tcp tcp = new Tcp();
+       
+          packet.getHeader(tcp);
          if (packet.hasHeader(tcp))
          {
-             System.out.println(packet.getCaptureHeader());
+            
+            //System.out.println(packet.toString());
+                     System.out.printf("tcp.dst_port=%d%n", tcp.destination());
+                     System.out.printf("tcp.src_port=%d%n", tcp.source());
+                     System.out.printf("tcp.ack=%x%n", tcp.ack());
          }
-        // System.out.printf("Received packet at %s caplen=%-4d len=%-4d %s\n",
-	//			    timestamp.toString(), // timestamp to 1 ms accuracy
-	//			    header.caplen(), // Length actually captured
-	//			    header.wirelen(), // Original length of the packet
-	//			    user // User supplied object
-	//			    );
+         Ip4 ip = new Ip4();
+
+if (packet.hasHeader(ip) && packet.hasHeader(tcp)) {
+  System.out.println(ip.toString());
+  System.out.println(tcp.toString());}
+         System.out.printf("Received packet at %s caplen=%-4d len=%-4d %s\n",
+				    timestamp.toString(), // timestamp to 1 ms accuracy
+				    header.caplen(), // Length actually captured
+				    header.wirelen(), // Original length of the packet
+				    user // User supplied object
+				    );
+          System.out.println(packet.getState().toDebugString());
 			}
+         
 		};
+
                 // dat vong loop la 10 packet
 		pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
                 // dong pcap
