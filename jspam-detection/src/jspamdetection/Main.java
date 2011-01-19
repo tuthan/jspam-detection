@@ -104,8 +104,8 @@ public class Main {
 
    JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
    {
-     Tcp tcp = new Tcp();
-       final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+        Tcp tcp = new Tcp();
+        final PcapPacket packet = new PcapPacket(JMemory.POINTER);
 	public void nextPacket(PcapHeader header, JBuffer buffer, String user)
         {
 	Timestamp timestamp =  new Timestamp(header.timestampInMillis());
@@ -113,35 +113,30 @@ public class Main {
 	 packet.peer(buffer);
          packet.getCaptureHeader().peerTo(header, 0);
          packet.scan(Ethernet.ID);
-       
-          packet.getHeader(tcp);
+         packet.getHeader(tcp);
          if (packet.hasHeader(tcp))
          {
-            
-            //System.out.println(packet.toString());
                      System.out.printf("tcp.dst_port=%d%n", tcp.destination());
                      System.out.printf("tcp.src_port=%d%n", tcp.source());
                      System.out.printf("tcp.ack=%x%n", tcp.ack());
          }
          Ip4 ip = new Ip4();
 
-if (packet.hasHeader(ip) && packet.hasHeader(tcp)) {
-  System.out.println(ip.toString());
-  System.out.println(tcp.toString());}
-         System.out.printf("Received packet at %s caplen=%-4d len=%-4d %s\n",
-				    timestamp.toString(), // timestamp to 1 ms accuracy
-				    header.caplen(), // Length actually captured
-				    header.wirelen(), // Original length of the packet
-				    user // User supplied object
-				    );
-          System.out.println(packet.getState().toDebugString());
-			}
+        if (packet.hasHeader(ip) )
+        {
+             System.out.println("Dia chi dich"+ip.destination());
+             System.out.println("Dia chi source"+ip.source());
+             System.out.printf("thoi gian"+timestamp.toString());
+      //    System.out.println(packet.getState().toDebugString());
+			
          
-		};
-
+	}
+        }
+   };
                 // dat vong loop la 10 packet
 		pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
                 // dong pcap
 		pcap.close();
 }
-}
+
+   }
