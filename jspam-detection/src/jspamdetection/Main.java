@@ -36,6 +36,7 @@ import org.jnetpcap.packet.JPacketHandler;
 import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
+import org.jnetpcap.protocol.tcpip.Udp;
 import sun.nio.ch.SocketOpts;
 import sun.nio.ch.SocketOpts.IP.TCP;
 
@@ -100,17 +101,14 @@ public class Main {
          }
          // vong loop bat goi tin
 
-
-
    JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
    {
         Tcp tcp = new Tcp();
         final PcapPacket packet = new PcapPacket(JMemory.POINTER);
-	public void nextPacket(PcapHeader header, JBuffer buffer, String user)
+        public void nextPacket(PcapHeader header, JBuffer buffer, String user)
         {
-	Timestamp timestamp =  new Timestamp(header.timestampInMillis());
-      
-	 packet.peer(buffer);
+        Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+         packet.peer(buffer);
          packet.getCaptureHeader().peerTo(header, 0);
          packet.scan(Ethernet.ID);
          packet.getHeader(tcp);
@@ -121,22 +119,37 @@ public class Main {
                      System.out.printf("tcp.ack=%x%n", tcp.ack());
          }
          Ip4 ip = new Ip4();
-
+         packet.getHeader(ip);
         if (packet.hasHeader(ip) )
         {
-             System.out.println("Dia chi dich"+ip.destination());
-             System.out.println("Dia chi source"+ip.source());
-             System.out.printf("thoi gian"+timestamp.toString());
+
+             System.out.println("Dia chi dich: "+ getHexString(ip.destination()));
+             System.out.println("Dia chi source: "+getHexString(ip.source()));
+             System.out.println("thoi gian: "+timestamp.toString());
       //    System.out.println(packet.getState().toDebugString());
-			
-         
-	}
+        }
+         Udp udp = new Udp();
+         packet.getHeader(udp);
+        if (packet.hasHeader(udp))
+         {
+                    System.out.printf("udp.dst_port=%d%n", udp.destination());
+                     System.out.printf("udp.src_port=%d%n", udp.source());
+         }
         }
    };
-                // dat vong loop la 10 packet
-		pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
-                // dong pcap
-		pcap.close();
+              // dat vong loop la 10 packet
+        pcap.loop(100, printSummaryHandler, "jNetPcap rocks!");
+        // dong pcap
+        pcap.close();
+}
+ public static String getHexString(byte[] b)
+ {
+     String result = "";
+       for (int i=0; i < b.length; i++)
+       {
+        result +=Integer.toString( ( b[i] & 0xff ) + 0x100, 16).substring( 1 );
+        }
+  return result;
 }
 
    }
