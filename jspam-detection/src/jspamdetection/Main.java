@@ -28,6 +28,7 @@ import java.util.List;
 import org.jnetpcap.JBufferHandler;
 import org.jnetpcap.JCaptureHeader;
 import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapBpfProgram;
 import org.jnetpcap.PcapDumper;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.PcapIf;
@@ -54,6 +55,13 @@ public class Main {
     public static void main(String[] args)
     {
         // TODO code application logic here
+        int snaplen =64*2048;
+        int promicious= Pcap.MODE_NON_PROMISCUOUS ;
+        int timeout= 10*1000;
+        PcapBpfProgram filter = new PcapBpfProgram();
+        String expression = "tcp 2port 80 and port 25";
+        int optimize = 0;         // 0 = false
+        int netmask = 0xFFFFFF00; // 255.255.255.0
         //tao 1 list de chua cac card mang
         List<PcapIf> alldevice= new ArrayList<PcapIf>();
       //    List<String> ans = new ArrayList<String>();
@@ -93,14 +101,21 @@ public class Main {
          PcapIf netInterface = alldevice.get(I);
          System.out.println(alldevice.get(I).getDescription());
          //open nic  to capture packet
-         int snaplen =64*2048;
-         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
-         int timeout= 10*1000;
+    
          Pcap pcap= Pcap.openLive(netInterface.getName(), snaplen, promicious, timeout, err);
+         // compile filter
+         
          if(pcap==null)
          {
             System.out.println("khong the mo card mang");
          }
+         if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
+         {
+                System.out.println(pcap.getErr());
+            return;
+         }
+         //gan filter vao pcap
+         pcap.setFilter(filter);
          // vong loop bat goi tin
 
    JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
@@ -134,8 +149,9 @@ public class Main {
          packet.getHeader(udp);
         if (packet.hasHeader(udp))
          {
-                    System.out.printf("udp.dst_port=%d%n", udp.destination());
-                    System.out.printf("udp.src_port=%d%n", udp.source());
+                System.out.println("thoi gian: "+timestamp.toString());
+                System.out.printf("udp.dst_port=%d%n", udp.destination());
+                System.out.printf("udp.src_port=%d%n", udp.source());
          }
         }
    };
