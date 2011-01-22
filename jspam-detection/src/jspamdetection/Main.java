@@ -13,11 +13,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.NetworkInterface;
+import java.net.UnknownHostException;
  import java.util.ArrayList;
  import java.util.Date;
  import java.util.List;
  import java.lang.*;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
  import org.jnetpcap.Pcap;
  import org.jnetpcap.PcapIf;
  import org.jnetpcap.packet.PcapPacket;
@@ -59,9 +64,9 @@ public class Main {
         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
         int timeout= 10*1000;
         PcapBpfProgram filter = new PcapBpfProgram();
-        String expression = "tcp 2port 80 and port 25";
+        String expression = "tcp port 80 or port 25";
         int optimize = 0;         // 0 = false
-        int netmask = 0xFFFFFF00; // 255.255.255.0
+        int netmask = 0xFFFFFF00; // 255.255.255.0\
         //tao 1 list de chua cac card mang
         List<PcapIf> alldevice= new ArrayList<PcapIf>();
       //    List<String> ans = new ArrayList<String>();
@@ -101,10 +106,10 @@ public class Main {
          PcapIf netInterface = alldevice.get(I);
          System.out.println(alldevice.get(I).getDescription());
          //open nic  to capture packet
-    
+
          Pcap pcap= Pcap.openLive(netInterface.getName(), snaplen, promicious, timeout, err);
          // compile filter
-         
+
          if(pcap==null)
          {
             System.out.println("khong the mo card mang");
@@ -121,6 +126,8 @@ public class Main {
    JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
    {
         Tcp tcp = new Tcp();
+        InetAddress dest_ip;
+        InetAddress sour_ip;
         final PcapPacket packet = new PcapPacket(JMemory.POINTER);
         public void nextPacket(PcapHeader header, JBuffer buffer, String user)
         {
@@ -139,11 +146,16 @@ public class Main {
          packet.getHeader(ip);
         if (packet.hasHeader(ip) )
         {
-
-             System.out.println("Dia chi dich: "+ getHexString(ip.destination()));
-             System.out.println("Dia chi source: "+getHexString(ip.source()));
-             System.out.println("thoi gian: "+timestamp.toString());
-      //    System.out.println(packet.getState().toDebugString());
+                    try {
+                        dest_ip = InetAddress.getByAddress(ip.destination());
+                        sour_ip = InetAddress.getByAddress(ip.source());
+                        System.out.println("Dia chi dich: " + dest_ip.toString());
+                        System.out.println("Dia chi source: " + sour_ip.toString());
+                        System.out.println("thoi gian: " + timestamp.toString());
+                        //    System.out.println(packet.getState().toDebugString());
+                    } catch (UnknownHostException ex) {
+                        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                    }
         }
          Udp udp = new Udp();
          packet.getHeader(udp);
@@ -156,15 +168,21 @@ public class Main {
         }
    };
               // dat vong loop la 10 packet
-        pcap.loop(100, printSummaryHandler, "jNetPcap rocks!");
+        pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
         //tao file luu .pcap
         StringBuilder errbuf = new StringBuilder();
-        String fname = "tests/test-afs.pcap";
-        pcap = Pcap.openOffline(fname, errbuf);
+        String fname = "test/test-afs.pcap";
+        Pcap pcap1 = Pcap.openOffline(fname, errbuf);
         String ofile = "tmp-capture-file.cap";
         PcapDumper dumper = pcap.dumpOpen(ofile); // output file
+        JBufferHandler<PcapDumper> dumpHandler = new JBufferHandler<PcapDumper>() {
 
-        pcap.loop(10, dumper); // Special native dumper call to loop
+          public void nextPacket(PcapHeader header, JBuffer buffer, PcapDumper dumper) {
+
+            dumper.dump(header, buffer);
+          }
+        };
+        pcap.loop(10,dumpHandler, dumper); // Special native dumper call to loop
 
         File file = new File(ofile);
         System.out.printf("%s file has %d bytes in it!\n", ofile, file.length());
