@@ -10,6 +10,7 @@ package jspamdetection;
  * @author jspamdetection team
  */
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.net.NetworkInterface;
  import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.List;
 import org.jnetpcap.JBufferHandler;
 import org.jnetpcap.JCaptureHeader;
 import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapDumper;
 import org.jnetpcap.PcapHeader;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.nio.JBuffer;
@@ -75,7 +77,7 @@ public class Main {
              System.out.println("#" + i + ": " + alldevice.get(i).getDescription());
 
         }
-       //  String l = System.in.readline.trim();
+
         InputStreamReader isr= new InputStreamReader(System.in);
         BufferedReader br = new BufferedReader(isr);
         int I=0;
@@ -133,12 +135,26 @@ public class Main {
         if (packet.hasHeader(udp))
          {
                     System.out.printf("udp.dst_port=%d%n", udp.destination());
-                     System.out.printf("udp.src_port=%d%n", udp.source());
+                    System.out.printf("udp.src_port=%d%n", udp.source());
          }
         }
    };
               // dat vong loop la 10 packet
         pcap.loop(100, printSummaryHandler, "jNetPcap rocks!");
+        //tao file luu .pcap
+        StringBuilder errbuf = new StringBuilder();
+        String fname = "tests/test-afs.pcap";
+        pcap = Pcap.openOffline(fname, errbuf);
+        String ofile = "tmp-capture-file.cap";
+        PcapDumper dumper = pcap.dumpOpen(ofile); // output file
+
+        pcap.loop(10, dumper); // Special native dumper call to loop
+
+        File file = new File(ofile);
+        System.out.printf("%s file has %d bytes in it!\n", ofile, file.length());
+
+        dumper.close();
+        //end code tao file luu
         // dong pcap
         pcap.close();
 }
