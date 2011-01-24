@@ -15,7 +15,9 @@ import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-
+import org.jnetpcap.*;
+import java.util.ArrayList;
+import java.util.List;
 /**
  * The application's main frame.
  */
@@ -25,14 +27,13 @@ public class GuiJnetPcapView extends FrameView {
         super(app);
 
         initComponents();
-        int[] list;
-        list =new int[4];
-        list[0]=0;
-        list[1]=1;
-        list[2]=2;
-        list[3]=3;
-        for(int i=0;i<4;i++)
-            cbbDevice.addItem(list[i]);
+        List<PcapIf> alldevice= new ArrayList<PcapIf>();
+        StringBuilder err= new StringBuilder();
+        //goi phuong thuc findalldevs de tim cac card mang
+        int r= Pcap.findAllDevs(alldevice, err);
+        for(int i=0;i<alldevice.size();i++)
+            cbbDevice.addItem(alldevice.get(i).getDescription().toString());
+
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
@@ -274,7 +275,7 @@ public class GuiJnetPcapView extends FrameView {
 
     private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
         btCapture.setEnabled(true);
-        txtDescrip.setText(cbbDevice.getItemListeners().toString());
+
     }//GEN-LAST:event_cbbDeviceItemStateChanged
 
     
