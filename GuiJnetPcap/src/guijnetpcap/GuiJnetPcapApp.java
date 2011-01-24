@@ -17,6 +17,7 @@ public class GuiJnetPcapApp extends SingleFrameApplication {
      */
     @Override protected void startup() {
         show(new GuiJnetPcapView(this));
+
     }
 
     /**
@@ -40,5 +41,6 @@ public class GuiJnetPcapApp extends SingleFrameApplication {
      */
     public static void main(String[] args) {
         launch(GuiJnetPcapApp.class, args);
+
     }
 }
