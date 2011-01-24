@@ -9,22 +9,20 @@ import java.io.File;
 import java.io.IOException;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
- import java.util.ArrayList;
- import java.util.Date;
- import java.util.List;
- import java.lang.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.lang.*;
 import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
- import org.jnetpcap.Pcap;
- import org.jnetpcap.PcapIf;
- import org.jnetpcap.packet.PcapPacket;
- import org.jnetpcap.packet.PcapPacketHandler;
- import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapIf;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
+import java.sql.Timestamp;
 import org.jnetpcap.JBufferHandler;
 import org.jnetpcap.JCaptureHeader;
 import org.jnetpcap.Pcap;
@@ -77,7 +75,7 @@ public class GuiJnetPcapView extends FrameView {
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
         messageTimer = new Timer(messageTimeout, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
                 statusMessageLabel.setText("");
             }
         });
@@ -87,7 +85,7 @@ public class GuiJnetPcapView extends FrameView {
             busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
         }
         busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
                 busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
                 statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
             }
@@ -99,7 +97,7 @@ public class GuiJnetPcapView extends FrameView {
         // connecting action tasks to status bar via TaskMonitor
         TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
         taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
                 if ("started".equals(propertyName)) {
                     if (!busyIconTimer.isRunning()) {
@@ -313,40 +311,41 @@ public class GuiJnetPcapView extends FrameView {
         int timeout= 10*1000;
         Pcap pcap= Pcap.openLive(codeName, snaplen, promicious, timeout, err);
         JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
-   {
-        Tcp tcp = new Tcp();
-        InetAddress dest_ip;
-        InetAddress sour_ip;
-        final PcapPacket packet = new PcapPacket(JMemory.POINTER);
-        public void nextPacket(PcapHeader header, JBuffer buffer, String user)
         {
-        Timestamp timestamp =  new Timestamp(header.timestampInMillis());
-         packet.peer(buffer);
-         packet.getCaptureHeader().peerTo(header, 0);
-         packet.scan(Ethernet.ID);
-         Ip4 ip = new Ip4();
-         packet.getHeader(ip);
-         if (packet.hasHeader(ip) )
-         {
-                    try {
+            Tcp tcp = new Tcp();
+            InetAddress dest_ip;
+            InetAddress sour_ip;
+            final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+            public void nextPacket(PcapHeader header, JBuffer buffer, String user)
+            {
+                Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+                packet.peer(buffer);
+                packet.getCaptureHeader().peerTo(header, 0);
+                packet.scan(Ethernet.ID);
+                Ip4 ip = new Ip4();
+                packet.getHeader(ip);
+                if (packet.hasHeader(ip) )
+                {
+                    try
+                    {
                         dest_ip = InetAddress.getByAddress(ip.destination());
                         sour_ip = InetAddress.getByAddress(ip.source());
                         result = result+timestamp.toString()+"||"+sour_ip.toString()+"||"+dest_ip.toString()+"||";
-                    } catch (UnknownHostException ex) {
+                    }
+                    catch (UnknownHostException ex)
+                    {
                         System.out.print(ex);
                     }
-         }
-         packet.getHeader(tcp);
-         if (packet.hasHeader(tcp))
-         {
-             String des = ""+tcp.destination();
-             String src = Integer.toString(tcp.source());
-             result = result+src+"||"+des+"\n";
-         }
-         
-
-        }
-   };
+                }
+                packet.getHeader(tcp);
+                if (packet.hasHeader(tcp))
+                {
+                    String des = ""+tcp.destination();
+                    String src = Integer.toString(tcp.source());
+                    result = result+src+"||"+des+"\n";
+                }
+            }
+        };
               // dat vong loop la 10 packet
         pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
         areaData.setText(result);
@@ -354,7 +353,7 @@ public class GuiJnetPcapView extends FrameView {
 
     private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
         btCapture.setEnabled(true);
-        //get code name of NIC when
+        //get code name of NIC when item changed
         for(int i=0;i<alldevice.size();i++)
             if(alldevice.get(i).getDescription().toString().equals(cbbDevice.getSelectedItem().toString()))
                 codeName = alldevice.get(i).getName().toString();
