@@ -40,8 +40,6 @@ import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
-import sun.nio.ch.SocketOpts;
-import sun.nio.ch.SocketOpts.IP.TCP;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
@@ -66,7 +64,7 @@ public class GuiJnetPcapView extends FrameView {
     public StringBuilder err= new StringBuilder();
     public int r= Pcap.findAllDevs(alldevice, err);
     public String codeName;
-
+    public String result="";
     public GuiJnetPcapView(SingleFrameApplication app) {
         super(app);
 
@@ -326,34 +324,37 @@ public class GuiJnetPcapView extends FrameView {
          packet.peer(buffer);
          packet.getCaptureHeader().peerTo(header, 0);
          packet.scan(Ethernet.ID);
-         packet.getHeader(tcp);
-         if (packet.hasHeader(tcp))
-         {
-             String des = String.valueOf(tcp.destination());
-             String src = String.valueOf(tcp.source());
-             areaData.setText(src+"\t"+des+"\t");
-         }
          Ip4 ip = new Ip4();
          packet.getHeader(ip);
-        if (packet.hasHeader(ip) )
-        {
+         if (packet.hasHeader(ip) )
+         {
                     try {
                         dest_ip = InetAddress.getByAddress(ip.destination());
                         sour_ip = InetAddress.getByAddress(ip.source());
-                        areaData.setText(dest_ip.toString()+"\t"+sour_ip.toString()+"\t"+timestamp.toString());
+                        result = result+timestamp.toString()+"||"+sour_ip.toString()+"||"+dest_ip.toString()+"||";
                     } catch (UnknownHostException ex) {
                         System.out.print(ex);
                     }
-        }
+         }
+         packet.getHeader(tcp);
+         if (packet.hasHeader(tcp))
+         {
+             String des = ""+tcp.destination();
+             String src = Integer.toString(tcp.source());
+             result = result+src+"||"+des+"\n";
+         }
+         
 
         }
    };
               // dat vong loop la 10 packet
         pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
+        areaData.setText(result);
     }//GEN-LAST:event_btCaptureMousePressed
 
     private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
         btCapture.setEnabled(true);
+        //get code name of NIC when
         for(int i=0;i<alldevice.size();i++)
             if(alldevice.get(i).getDescription().toString().equals(cbbDevice.getSelectedItem().toString()))
                 codeName = alldevice.get(i).getName().toString();
