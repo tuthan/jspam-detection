@@ -4,6 +4,45 @@
 
 package guijnetpcap;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.List;
+ import java.lang.*;
+import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+ import org.jnetpcap.Pcap;
+ import org.jnetpcap.PcapIf;
+ import org.jnetpcap.packet.PcapPacket;
+ import org.jnetpcap.packet.PcapPacketHandler;
+ import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import org.jnetpcap.JBufferHandler;
+import org.jnetpcap.JCaptureHeader;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapBpfProgram;
+import org.jnetpcap.PcapDumper;
+import org.jnetpcap.PcapHeader;
+import org.jnetpcap.PcapIf;
+import org.jnetpcap.nio.JBuffer;
+import org.jnetpcap.nio.JMemory;
+import org.jnetpcap.packet.JPacket;
+import org.jnetpcap.packet.JPacketHandler;
+import org.jnetpcap.protocol.lan.Ethernet;
+import org.jnetpcap.protocol.network.Ip4;
+import org.jnetpcap.protocol.tcpip.Tcp;
+import org.jnetpcap.protocol.tcpip.Udp;
+import sun.nio.ch.SocketOpts;
+import sun.nio.ch.SocketOpts.IP.TCP;
+
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -23,14 +62,16 @@ import java.util.List;
  */
 public class GuiJnetPcapView extends FrameView {
 
+    public List<PcapIf> alldevice= new ArrayList<PcapIf>();
+    public StringBuilder err= new StringBuilder();
+    public int r= Pcap.findAllDevs(alldevice, err);
+    public String codeName;
+
     public GuiJnetPcapView(SingleFrameApplication app) {
         super(app);
 
         initComponents();
-        List<PcapIf> alldevice= new ArrayList<PcapIf>();
-        StringBuilder err= new StringBuilder();
-        //goi phuong thuc findalldevs de tim cac card mang
-        int r= Pcap.findAllDevs(alldevice, err);
+
         for(int i=0;i<alldevice.size();i++)
             cbbDevice.addItem(alldevice.get(i).getDescription().toString());
 
@@ -110,7 +151,7 @@ public class GuiJnetPcapView extends FrameView {
 
         mainPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        areaData = new javax.swing.JTextArea();
         cbbDevice = new javax.swing.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         txtDescrip = new javax.swing.JTextField();
@@ -131,10 +172,10 @@ public class GuiJnetPcapView extends FrameView {
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jTextArea1.setName("jTextArea1"); // NOI18N
-        jScrollPane1.setViewportView(jTextArea1);
+        areaData.setColumns(20);
+        areaData.setRows(5);
+        areaData.setName("areaData"); // NOI18N
+        jScrollPane1.setViewportView(areaData);
 
         cbbDevice.setName("cbbDevice"); // NOI18N
         cbbDevice.addItemListener(new java.awt.event.ItemListener() {
@@ -165,9 +206,7 @@ public class GuiJnetPcapView extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addGap(29, 29, 29)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(27, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(cbbDevice, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -182,8 +221,8 @@ public class GuiJnetPcapView extends FrameView {
                                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)))
                             .addGroup(mainPanelLayout.createSequentialGroup()
                                 .addGap(44, 44, 44)
-                                .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGap(152, 152, 152))))
+                                .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -271,21 +310,63 @@ public class GuiJnetPcapView extends FrameView {
     private void btCaptureMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMousePressed
 
         btCapture.setEnabled(false);
+        int snaplen =64*2048;
+        int promicious= Pcap.MODE_NON_PROMISCUOUS ;
+        int timeout= 10*1000;
+        Pcap pcap= Pcap.openLive(codeName, snaplen, promicious, timeout, err);
+        JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
+   {
+        Tcp tcp = new Tcp();
+        InetAddress dest_ip;
+        InetAddress sour_ip;
+        final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+        public void nextPacket(PcapHeader header, JBuffer buffer, String user)
+        {
+        Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+         packet.peer(buffer);
+         packet.getCaptureHeader().peerTo(header, 0);
+         packet.scan(Ethernet.ID);
+         packet.getHeader(tcp);
+         if (packet.hasHeader(tcp))
+         {
+             String des = String.valueOf(tcp.destination());
+             String src = String.valueOf(tcp.source());
+             areaData.setText(src+"\t"+des+"\t");
+         }
+         Ip4 ip = new Ip4();
+         packet.getHeader(ip);
+        if (packet.hasHeader(ip) )
+        {
+                    try {
+                        dest_ip = InetAddress.getByAddress(ip.destination());
+                        sour_ip = InetAddress.getByAddress(ip.source());
+                        areaData.setText(dest_ip.toString()+"\t"+sour_ip.toString()+"\t"+timestamp.toString());
+                    } catch (UnknownHostException ex) {
+                        System.out.print(ex);
+                    }
+        }
+
+        }
+   };
+              // dat vong loop la 10 packet
+        pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
     }//GEN-LAST:event_btCaptureMousePressed
 
     private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
         btCapture.setEnabled(true);
-
+        for(int i=0;i<alldevice.size();i++)
+            if(alldevice.get(i).getDescription().toString().equals(cbbDevice.getSelectedItem().toString()))
+                codeName = alldevice.get(i).getName().toString();
     }//GEN-LAST:event_cbbDeviceItemStateChanged
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea areaData;
     private javax.swing.JButton btCapture;
     private javax.swing.JComboBox cbbDevice;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JProgressBar progressBar;
