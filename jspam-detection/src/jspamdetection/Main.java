@@ -1,3 +1,4 @@
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -63,6 +64,7 @@ public class Main {
         int snaplen =64*2048;
         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
         int timeout= 10*1000;
+        boolean capturing = true;
         PcapBpfProgram filter = new PcapBpfProgram();
         String expression = "tcp port 80 or port 25";
         int optimize = 0;         // 0 = false
@@ -97,6 +99,7 @@ public class Main {
         try{
             String l=br.readLine();
             I=new Integer(l).intValue();
+
         }catch(Exception e)
         {
             System.out.println(e);
@@ -106,67 +109,66 @@ public class Main {
          PcapIf netInterface = alldevice.get(I);
          System.out.println(alldevice.get(I).getDescription());
          //open nic  to capture packet
+         //tao dispatcher
+         while(capturing)
+         {
+             Pcap pcap= Pcap.openLive(netInterface.getName(), snaplen, promicious, timeout, err);
 
-         Pcap pcap= Pcap.openLive(netInterface.getName(), snaplen, promicious, timeout, err);
          // compile filter
 
-         if(pcap==null)
-         {
-            System.out.println("khong the mo card mang");
-         }
-         if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
-         {
+            if(pcap==null)
+            {
+                System.out.println("khong the mo card mang");
+            }
+            if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
+            {
                 System.out.println(pcap.getErr());
-            return;
-         }
-         //gan filter vao pcap
-         pcap.setFilter(filter);
-         // vong loop bat goi tin
+                return;
+            }
+            //gan filter vao pcap
+            pcap.setFilter(filter);
+            // vong loop bat goi tin
 
-   JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
-   {
-        Tcp tcp = new Tcp();
-        InetAddress dest_ip;
-        InetAddress sour_ip;
-        final PcapPacket packet = new PcapPacket(JMemory.POINTER);
-        public void nextPacket(PcapHeader header, JBuffer buffer, String user)
-        {
-        Timestamp timestamp =  new Timestamp(header.timestampInMillis());
-         packet.peer(buffer);
-         packet.getCaptureHeader().peerTo(header, 0);
-         packet.scan(Ethernet.ID);
-         packet.getHeader(tcp);
-         if (packet.hasHeader(tcp))
-         {
+            JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
+            {
+                Tcp tcp = new Tcp();
+                InetAddress dest_ip;
+                InetAddress sour_ip;
+                final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+                public void nextPacket(PcapHeader header, JBuffer buffer, String user)
+                {
+                    Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+                    packet.peer(buffer);
+                    packet.getCaptureHeader().peerTo(header, 0);
+                    packet.scan(Ethernet.ID);
+                    packet.getHeader(tcp);
+                    if (packet.hasHeader(tcp))
+                    {
+                      String str =""+tcp.destination();
                      System.out.printf("tcp.dst_port=%d%n", tcp.destination());
                      System.out.printf("tcp.src_port=%d%n", tcp.source());
                      System.out.printf("tcp.ack=%x%n", tcp.ack());
-         }
-         Ip4 ip = new Ip4();
-         packet.getHeader(ip);
-        if (packet.hasHeader(ip) )
-        {
-                    try {
+                    }
+                    Ip4 ip = new Ip4();
+                    packet.getHeader(ip);
+                    if (packet.hasHeader(ip) )
+                    {
+                        try
+                        {
                         dest_ip = InetAddress.getByAddress(ip.destination());
                         sour_ip = InetAddress.getByAddress(ip.source());
                         System.out.println("Dia chi dich: " + dest_ip.toString());
                         System.out.println("Dia chi source: " + sour_ip.toString());
                         System.out.println("thoi gian: " + timestamp.toString());
                         //    System.out.println(packet.getState().toDebugString());
-                    } catch (UnknownHostException ex) {
+                    } catch (UnknownHostException ex)
+                    {
                         Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                     }
-        }
-         Udp udp = new Udp();
-         packet.getHeader(udp);
-        if (packet.hasHeader(udp))
-         {
-                System.out.println("thoi gian: "+timestamp.toString());
-                System.out.printf("udp.dst_port=%d%n", udp.destination());
-                System.out.printf("udp.src_port=%d%n", udp.source());
-         }
-        }
-   };
+                    }
+                  
+                }
+            };
               // dat vong loop la 10 packet
         pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
         //tao file luu .pcap
@@ -174,7 +176,7 @@ public class Main {
         String fname = "test/test-afs.pcap";
         Pcap pcap1 = Pcap.openOffline(fname, errbuf);
         String ofile = "tmp-capture-file.cap";
-        PcapDumper dumper = pcap.dumpOpen(ofile); // output file
+        PcapDumper dumper = pcap1.dumpOpen(ofile); // output file
         JBufferHandler<PcapDumper> dumpHandler = new JBufferHandler<PcapDumper>() {
 
           public void nextPacket(PcapHeader header, JBuffer buffer, PcapDumper dumper) {
@@ -191,7 +193,8 @@ public class Main {
         //end code tao file luu
         // dong pcap
         pcap.close();
-}
+    }
+    }
  public static String getHexString(byte[] b)
  {
      String result = "";
@@ -203,3 +206,4 @@ public class Main {
 }
 
    }
+
