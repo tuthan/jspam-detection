@@ -16,8 +16,6 @@ import java.lang.*;
 import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
@@ -63,6 +61,7 @@ public class GuiJnetPcapView extends FrameView {
     public int r= Pcap.findAllDevs(alldevice, err);
     public String codeName;
     public String result="";
+    public Pcap pcap;
     public GuiJnetPcapView(SingleFrameApplication app) {
         super(app);
 
@@ -146,13 +145,16 @@ public class GuiJnetPcapView extends FrameView {
     private void initComponents() {
 
         mainPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        cbbDevice = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         areaData = new javax.swing.JTextArea();
-        cbbDevice = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
         txtDescrip = new javax.swing.JTextField();
         btCapture = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
@@ -166,12 +168,11 @@ public class GuiJnetPcapView extends FrameView {
 
         mainPanel.setName("mainPanel"); // NOI18N
 
-        jScrollPane1.setName("jScrollPane1"); // NOI18N
+        jLabel1.setName("jLabel1"); // NOI18N
 
-        areaData.setColumns(20);
-        areaData.setRows(5);
-        areaData.setName("areaData"); // NOI18N
-        jScrollPane1.setViewportView(areaData);
+        jLabel2.setName("jLabel2"); // NOI18N
+
+        jPanel1.setName("jPanel1"); // NOI18N
 
         cbbDevice.setName("cbbDevice"); // NOI18N
         cbbDevice.addItemListener(new java.awt.event.ItemListener() {
@@ -180,7 +181,13 @@ public class GuiJnetPcapView extends FrameView {
             }
         });
 
-        jLabel1.setName("jLabel1"); // NOI18N
+        jScrollPane1.setName("jScrollPane1"); // NOI18N
+
+        areaData.setColumns(20);
+        areaData.setEditable(false);
+        areaData.setRows(5);
+        areaData.setName("areaData"); // NOI18N
+        jScrollPane1.setViewportView(areaData);
 
         txtDescrip.setName("txtDescrip"); // NOI18N
 
@@ -188,56 +195,97 @@ public class GuiJnetPcapView extends FrameView {
         btCapture.setText(resourceMap.getString("btCapture.text")); // NOI18N
         btCapture.setName("btCapture"); // NOI18N
         btCapture.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btCaptureMouseClicked(evt);
+            }
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 btCaptureMousePressed(evt);
             }
         });
 
-        jLabel2.setName("jLabel2"); // NOI18N
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setName("jButton1"); // NOI18N
+        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButton1MouseClicked(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jButton1MousePressed(evt);
+            }
+        });
+
+        jLabel3.setText(resourceMap.getString("jLabel3.text")); // NOI18N
+        jLabel3.setName("jLabel3"); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbbDevice, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(txtDescrip, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addGap(89, 89, 89)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
+                        .addContainerGap(176, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(42, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbbDevice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btCapture))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtDescrip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGap(29, 29, 29)
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(496, 496, 496)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(cbbDevice, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtDescrip, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE))
-                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(mainPanelLayout.createSequentialGroup()
-                                .addGap(55, 55, 55)
-                                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(mainPanelLayout.createSequentialGroup()
-                                        .addGap(37, 37, 37)
-                                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)))
-                            .addGroup(mainPanelLayout.createSequentialGroup()
-                                .addGap(44, 44, 44)
-                                .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
-                .addContainerGap(27, Short.MAX_VALUE))
+                        .addGap(37, 37, 37)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
+                .addGap(431, 431, 431))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addGap(11, 11, 11)
-                        .addComponent(btCapture, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(7, 7, 7)
-                        .addComponent(jLabel2))
-                    .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(cbbDevice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(19, 19, 19)
-                        .addComponent(txtDescrip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addComponent(jLabel1)
+                        .addGap(155, 155, 155)
+                        .addComponent(jLabel2)))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -276,11 +324,11 @@ public class GuiJnetPcapView extends FrameView {
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 678, Short.MAX_VALUE)
+            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1303, Short.MAX_VALUE)
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 508, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 1133, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusAnimationLabel)
@@ -305,16 +353,53 @@ public class GuiJnetPcapView extends FrameView {
 
     private void btCaptureMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMousePressed
 
-        btCapture.setEnabled(false);
+      
+    }//GEN-LAST:event_btCaptureMousePressed
+
+    private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
+        btCapture.setEnabled(true);
+        //get code name of NIC when item changed
+        for(int i=0;i<alldevice.size();i++)
+            if(alldevice.get(i).getDescription().toString().equals(cbbDevice.getSelectedItem().toString()))
+                codeName = alldevice.get(i).getName().toString();
+    }//GEN-LAST:event_cbbDeviceItemStateChanged
+
+    private void jButton1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MousePressed
+        // TODO add your handling code here:
+        pcap.close();
+    }//GEN-LAST:event_jButton1MousePressed
+
+    private void btCaptureMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMouseClicked
+        // TODO add your handling code here:
+          btCapture.setEnabled(false);
+        //prameter of pcap.openlive
         int snaplen =64*2048;
         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
         int timeout= 10*1000;
-        Pcap pcap= Pcap.openLive(codeName, snaplen, promicious, timeout, err);
-        JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
-        {
+        //end
+        //parameter of filter
+        PcapBpfProgram filter = new PcapBpfProgram();
+        String expression = "tcp port 80 or port 25";
+        int optimize = 0;         // 0 = false
+        int netmask = 0xFFFFFF00; // 255.255.255.0
+        //end
+        //open live to capture packet
+         pcap= Pcap.openLive(codeName, snaplen, promicious, timeout, err);
+         if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
+            {
+                
+                return;
+            }
+          //add filter in pcap
+          pcap.setFilter(filter);
+          //Create a loop
+          JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
+          {
             Tcp tcp = new Tcp();
             InetAddress dest_ip;
             InetAddress sour_ip;
+            String des;
+            String src;
             final PcapPacket packet = new PcapPacket(JMemory.POINTER);
             public void nextPacket(PcapHeader header, JBuffer buffer, String user)
             {
@@ -330,9 +415,9 @@ public class GuiJnetPcapView extends FrameView {
                     {
                         dest_ip = InetAddress.getByAddress(ip.destination());
                         sour_ip = InetAddress.getByAddress(ip.source());
-                        result = result+timestamp.toString()+"||"+sour_ip.toString()+"||"+dest_ip.toString()+"||";
+                       
                     }
-                    catch (UnknownHostException ex)
+                    catch (Exception ex)
                     {
                         System.out.print(ex);
                     }
@@ -340,32 +425,34 @@ public class GuiJnetPcapView extends FrameView {
                 packet.getHeader(tcp);
                 if (packet.hasHeader(tcp))
                 {
-                    String des = ""+tcp.destination();
-                    String src = Integer.toString(tcp.source());
-                    result = result+src+"||"+des+"\n";
+                    des = new Integer(tcp.destination()).toString();
+                    src = new Integer(tcp.source()).toString();
                 }
+                 result +=timestamp.toString()+"||"+sour_ip.toString()+"||"+dest_ip.toString()+"||"+src+des+"\n";
             }
         };
               // dat vong loop la 10 packet
-        pcap.loop(10, printSummaryHandler, "jNetPcap rocks!");
+        pcap.loop(Pcap.LOOP_INFINATE, printSummaryHandler, "jNetPcap rocks!");
+         pcap.close();
         areaData.setText(result);
-    }//GEN-LAST:event_btCaptureMousePressed
+    }//GEN-LAST:event_btCaptureMouseClicked
 
-    private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
-        btCapture.setEnabled(true);
-        //get code name of NIC when item changed
-        for(int i=0;i<alldevice.size();i++)
-            if(alldevice.get(i).getDescription().toString().equals(cbbDevice.getSelectedItem().toString()))
-                codeName = alldevice.get(i).getName().toString();
-    }//GEN-LAST:event_cbbDeviceItemStateChanged
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        // TODO add your handling code here:
+         
+          
+    }//GEN-LAST:event_jButton1MouseClicked
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea areaData;
     private javax.swing.JButton btCapture;
     private javax.swing.JComboBox cbbDevice;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
