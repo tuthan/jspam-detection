@@ -51,6 +51,7 @@ import javax.swing.JFrame;
 import org.jnetpcap.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.jnetpcap.packet.format.FormatUtils;
 /**
  * The application's main frame.
  */
@@ -396,8 +397,7 @@ public class GuiJnetPcapView extends FrameView {
           JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
           {
             Tcp tcp = new Tcp();
-            InetAddress dest_ip;
-            InetAddress sour_ip;
+            String ip_address = null;
             String des;
             String src;
             final PcapPacket packet = new PcapPacket(JMemory.POINTER);
@@ -411,16 +411,7 @@ public class GuiJnetPcapView extends FrameView {
                 packet.getHeader(ip);
                 if (packet.hasHeader(ip) )
                 {
-                    try
-                    {
-                        dest_ip = InetAddress.getByAddress(ip.destination());
-                        sour_ip = InetAddress.getByAddress(ip.source());
-                       
-                    }
-                    catch (Exception ex)
-                    {
-                        System.out.print(ex);
-                    }
+                   ip_address = FormatUtils.ip(ip.source())+"||"+FormatUtils.ip(ip.destination());
                 }
                 packet.getHeader(tcp);
                 if (packet.hasHeader(tcp))
@@ -428,11 +419,11 @@ public class GuiJnetPcapView extends FrameView {
                     des = new Integer(tcp.destination()).toString();
                     src = new Integer(tcp.source()).toString();
                 }
-                 result +=timestamp.toString()+"||"+sour_ip.toString()+"||"+dest_ip.toString()+"||"+src+des+"\n";
+                 result +=timestamp.toString()+"||"+ip_address+"||"+src+des+"\n";
             }
         };
               // dat vong loop la 10 packet
-        pcap.loop(Pcap.LOOP_INFINATE, printSummaryHandler, "jNetPcap rocks!");
+        pcap.loop(10, printSummaryHandler, "jSpam Mail Detector!");
          pcap.close();
         areaData.setText(result);
     }//GEN-LAST:event_btCaptureMouseClicked
