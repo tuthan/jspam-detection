@@ -51,6 +51,7 @@ import javax.swing.JFrame;
 import org.jnetpcap.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFileChooser;
 import org.jnetpcap.packet.format.FormatUtils;
 /**
  * The application's main frame.
@@ -63,6 +64,7 @@ public class GuiJnetPcapView extends FrameView {
     public String codeName;
     public String result="";
     public Pcap pcap;
+    public String ofile ;
     public GuiJnetPcapView(SingleFrameApplication app) {
         super(app);
 
@@ -158,17 +160,13 @@ public class GuiJnetPcapView extends FrameView {
         jLabel3 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
-        statusPanel = new javax.swing.JPanel();
-        javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
-        statusMessageLabel = new javax.swing.JLabel();
-        statusAnimationLabel = new javax.swing.JLabel();
-        progressBar = new javax.swing.JProgressBar();
 
         mainPanel.setName("mainPanel"); // NOI18N
-        mainPanel.setPreferredSize(new java.awt.Dimension(435, 357));
+        mainPanel.setPreferredSize(new java.awt.Dimension(650, 357));
 
         jLabel1.setName("jLabel1"); // NOI18N
 
@@ -228,18 +226,18 @@ public class GuiJnetPcapView extends FrameView {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbbDevice, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtDescrip, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
+                            .addComponent(txtDescrip, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
                         .addGap(89, 89, 89)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
-                            .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
+                            .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE))
                         .addGap(176, 176, 176))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(34, Short.MAX_VALUE))))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 599, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -266,7 +264,7 @@ public class GuiJnetPcapView extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1685, 1685, 1685)
+                .addGap(1735, 1735, 1735)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addGap(1559, 1559, 1559)
@@ -284,7 +282,7 @@ public class GuiJnetPcapView extends FrameView {
                         .addComponent(jLabel1)
                         .addGap(155, 155, 155)
                         .addComponent(jLabel2)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -292,9 +290,23 @@ public class GuiJnetPcapView extends FrameView {
         fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
         fileMenu.setName("fileMenu"); // NOI18N
 
+        jMenuItem1.setText(resourceMap.getString("jMenuItem1.text")); // NOI18N
+        jMenuItem1.setName("jMenuItem1"); // NOI18N
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuItem1);
+
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(guijnetpcap.GuiJnetPcapApp.class).getContext().getActionMap(GuiJnetPcapView.class, this);
         exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
         exitMenuItem.setName("exitMenuItem"); // NOI18N
+        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitMenuItemActionPerformed(evt);
+            }
+        });
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
@@ -308,49 +320,8 @@ public class GuiJnetPcapView extends FrameView {
 
         menuBar.add(helpMenu);
 
-        statusPanel.setName("statusPanel"); // NOI18N
-
-        statusPanelSeparator.setName("statusPanelSeparator"); // NOI18N
-
-        statusMessageLabel.setName("statusMessageLabel"); // NOI18N
-
-        statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        statusAnimationLabel.setName("statusAnimationLabel"); // NOI18N
-
-        progressBar.setName("progressBar"); // NOI18N
-
-        javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
-        statusPanel.setLayout(statusPanelLayout);
-        statusPanelLayout.setHorizontalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addGap(2134, 2134, 2134)
-                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1799, Short.MAX_VALUE))
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 3763, Short.MAX_VALUE)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusAnimationLabel)
-                .addContainerGap())
-        );
-        statusPanelLayout.setVerticalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addGap(344, 344, 344)
-                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(statusMessageLabel)
-                    .addComponent(statusAnimationLabel)
-                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(3, 3, 3))
-        );
-
         setComponent(mainPanel);
         setMenuBar(menuBar);
-        setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btCaptureMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMousePressed
@@ -391,11 +362,12 @@ public class GuiJnetPcapView extends FrameView {
          if(txtDescrip.getText()!=null)
          {
             expression=expression+" or host "+txtDescrip.getText();
-            System.out.println(expression);
+            
          }
+         System.out.println(expression);
          if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
             {
-                
+                System.out.print("loi filter");
                 return;
             }
           //add filter in pcap
@@ -431,6 +403,7 @@ public class GuiJnetPcapView extends FrameView {
         };
               // dat vong loop la 10 packet
         pcap.loop(10, printSummaryHandler, "jSpam Mail Detector!");
+      
          pcap.close();
         areaData.setText(result);
     }//GEN-LAST:event_btCaptureMouseClicked
@@ -441,6 +414,43 @@ public class GuiJnetPcapView extends FrameView {
           
     }//GEN-LAST:event_jButton1MouseClicked
 
+    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+        // TODO add your handling code here:
+        System.exit(0);
+    }//GEN-LAST:event_exitMenuItemActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // TODO add your handling code here:
+        JFileChooser jFc= new JFileChooser();
+         if(jFc.showSaveDialog(jFc) == JFileChooser.APPROVE_OPTION) {
+            //code to handle choosed file here.
+              File file = jFc.getSelectedFile();
+              ofile = file.getName();
+              
+          
+        }
+                  //tao file luu .pcap
+        StringBuilder errbuf = new StringBuilder();
+        String fname = "test/test-afs.pcap";
+        Pcap pcap1 = Pcap.openOffline(fname, errbuf);
+        //ofile lay tu dong 492
+        ofile += ".cap";
+        PcapDumper dumper = pcap1.dumpOpen(ofile); // output file
+        JBufferHandler<PcapDumper> dumpHandler = new JBufferHandler<PcapDumper>() {
+
+          public void nextPacket(PcapHeader header, JBuffer buffer, PcapDumper dumper) {
+
+            dumper.dump(header, buffer);
+          }
+        };
+        pcap.loop(10,dumpHandler, dumper); // Special native dumper call to loop
+
+        File file = new File(ofile);
+        System.out.printf("%s file has %d bytes in it!\n", ofile, file.length());
+        dumper.close();
+// end save file
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea areaData;
@@ -450,14 +460,11 @@ public class GuiJnetPcapView extends FrameView {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JProgressBar progressBar;
-    private javax.swing.JLabel statusAnimationLabel;
-    private javax.swing.JLabel statusMessageLabel;
-    private javax.swing.JPanel statusPanel;
     private javax.swing.JTextField txtDescrip;
     // End of variables declaration//GEN-END:variables
 
