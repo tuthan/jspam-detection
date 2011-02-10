@@ -234,8 +234,10 @@ public class GuiJnetPcapView extends FrameView {
                 "#", "Time", "Ip Source", "PortSource", "Ip Destination", "Port Destination"
             }
         ));
+        jTable1.setColumnSelectionAllowed(true);
         jTable1.setName("jTable1"); // NOI18N
         jScrollPane2.setViewportView(jTable1);
+        jTable1.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jTable1.getColumnModel().getColumn(0).setHeaderValue(resourceMap.getString("jTable1.columnModel.title0")); // NOI18N
         jTable1.getColumnModel().getColumn(1).setHeaderValue(resourceMap.getString("jTable1.columnModel.title1")); // NOI18N
         jTable1.getColumnModel().getColumn(2).setHeaderValue(resourceMap.getString("jTable1.columnModel.title2")); // NOI18N
@@ -461,9 +463,9 @@ public class GuiJnetPcapView extends FrameView {
                 {
                     PcapPacket Packet= this.listPacket.get(i);
                 
-                //    Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+                    Timestamp timestamp =  new Timestamp(Packet.getCaptureHeader().timestampInMillis());
                     obj[i][0]=Packet.getFrameNumber();
-                    //obj[i][1]=timestamp.toString();
+                    obj[i][1]=timestamp.toString();
                       Packet.getHeader(ip);
                     if(Packet.hasHeader(ip))
                     {
