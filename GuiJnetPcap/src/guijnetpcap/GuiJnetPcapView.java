@@ -51,6 +51,7 @@ import javax.swing.JFrame;
 import org.jnetpcap.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.table.DefaultTableModel;
 import org.jnetpcap.packet.format.FormatUtils;
 /**
  * The application's main frame.
@@ -156,6 +157,8 @@ public class GuiJnetPcapView extends FrameView {
         btCapture = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
@@ -218,6 +221,28 @@ public class GuiJnetPcapView extends FrameView {
 
         jLabel3.setName("jLabel3"); // NOI18N
 
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "#", "Time", "Ip Source", "PortSource", "Ip Destination", "Port Destination"
+            }
+        ));
+        jTable1.setName("jTable1"); // NOI18N
+        jScrollPane2.setViewportView(jTable1);
+        jTable1.getColumnModel().getColumn(0).setHeaderValue(resourceMap.getString("jTable1.columnModel.title0")); // NOI18N
+        jTable1.getColumnModel().getColumn(1).setHeaderValue(resourceMap.getString("jTable1.columnModel.title1")); // NOI18N
+        jTable1.getColumnModel().getColumn(2).setHeaderValue(resourceMap.getString("jTable1.columnModel.title2")); // NOI18N
+        jTable1.getColumnModel().getColumn(3).setHeaderValue(resourceMap.getString("jTable1.columnModel.title3")); // NOI18N
+        jTable1.getColumnModel().getColumn(4).setHeaderValue(resourceMap.getString("jTable1.columnModel.title4")); // NOI18N
+        jTable1.getColumnModel().getColumn(5).setHeaderValue(resourceMap.getString("jTable1.columnModel.title5")); // NOI18N
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -226,20 +251,24 @@ public class GuiJnetPcapView extends FrameView {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtDescrip)
-                            .addComponent(cbbDevice, 0, 262, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 119, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
-                            .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
-                        .addGap(176, 176, 176))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 877, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(34, Short.MAX_VALUE))))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 625, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap())
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(txtDescrip)
+                                .addComponent(cbbDevice, 0, 262, Short.MAX_VALUE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 240, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                                .addComponent(btCapture, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE))
+                            .addGap(176, 176, 176))
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap()))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -255,8 +284,10 @@ public class GuiJnetPcapView extends FrameView {
                     .addComponent(txtDescrip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 465, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
@@ -266,7 +297,7 @@ public class GuiJnetPcapView extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1685, 1685, 1685)
+                .addGap(1505, 1505, 1505)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(mainPanelLayout.createSequentialGroup()
                         .addGap(1559, 1559, 1559)
@@ -325,11 +356,11 @@ public class GuiJnetPcapView extends FrameView {
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addGap(2134, 2134, 2134)
-                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1799, Short.MAX_VALUE))
+                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 1865, Short.MAX_VALUE))
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 3763, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 3829, Short.MAX_VALUE)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statusAnimationLabel)
@@ -381,40 +412,85 @@ public class GuiJnetPcapView extends FrameView {
         //end
         //parameter of filter
         PcapBpfProgram filter = new PcapBpfProgram();
-        String expression = "tcp port 80 or port 25";
+        //String expression = "tcp port 80 or port 25";
         int optimize = 0;         // 0 = false
         int netmask = 0xFFFFFF00; // 255.255.255.0
         //end
         //open live to capture packet
          pcap= Pcap.openLive(codeName, snaplen, promicious, timeout, err);
          //edit filter
-         if(txtDescrip.getText()!=null)
-         {
-            expression=expression+" or host "+txtDescrip.getText();
-            System.out.println(expression);
-         }
-         if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
-            {
+      //   if(txtDescrip.getText()!=null)
+      //   {
+      //      expression=expression+" or host "+txtDescrip.getText();
+      //      System.out.println(expression);
+     //    }
+     //    if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
+     //       {
                 
-                return;
-            }
+       //         return;
+      //      }
           //add filter in pcap
-          pcap.setFilter(filter);
+       //   pcap.setFilter(filter);
           //Create a loop
           JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
           {
             Tcp tcp = new Tcp();
+            Ip4 ip = new Ip4();
             String ip_address = null;
             String des;
             String src;
             final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+             ArrayList<PcapPacket> listPacket = new ArrayList<PcapPacket>();
             public void nextPacket(PcapHeader header, JBuffer buffer, String user)
             {
-                Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+                //add packet into arraylist
+               packet.peer(buffer);
+                packet.getCaptureHeader().peerTo(header, 0);
+                packet.scan(Ethernet.ID);
+                this.listPacket.add(packet);
+
+                Object[] col={"#",
+                        "Time",
+                        "Ip Source",
+                        "Port Source",
+                        "Ip Destination",
+                        "Port Destination",
+                        "Packet"
+                       };
+                Object[][] obj = new Object[this.listPacket.size()][7];
+                //Create loop to add value into Jtable
+                for(int i=0;i<this.listPacket.size();i++)
+                {
+                    PcapPacket Packet= this.listPacket.get(i);
+                    System.out.println(this.listPacket.size());
+                    Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+                    obj[i][0]=Packet.getFrameNumber();
+                    obj[i][1]=timestamp.toString();
+                      Packet.getHeader(ip);
+                    if(Packet.hasHeader(ip))
+                    {
+                        obj[i][2]=FormatUtils.ip(ip.source());
+                        obj[i][4]=FormatUtils.ip(ip.destination());
+
+                    }
+                       Packet.getHeader(tcp);
+                    if (Packet.hasHeader(tcp))
+                    {
+                        obj[i][3] = tcp.destination();
+                        obj[i][5] = tcp.source();
+                    }
+                       obj[i][6]=Packet.toString();
+                }
+                DefaultTableModel model= new DefaultTableModel(obj, col);
+                //j modelTableListPacket = new ModelTable(obj, col);
+                jTable1.setModel(model);
+
+
+               Timestamp timestamp =  new Timestamp(header.timestampInMillis());
                 packet.peer(buffer);
                 packet.getCaptureHeader().peerTo(header, 0);
                 packet.scan(Ethernet.ID);
-                Ip4 ip = new Ip4();
+
                 packet.getHeader(ip);
                 if (packet.hasHeader(ip) )
                 {
@@ -426,13 +502,15 @@ public class GuiJnetPcapView extends FrameView {
                     des = new Integer(tcp.destination()).toString();
                     src = new Integer(tcp.source()).toString();
                 }
-                 result +=timestamp.toString()+"||"+ip_address+"||"+src+"||"+des+"\n";
+                 result +=timestamp.toString()+packet.getFrameNumber()+"||"+ip_address+"||"+src+"||"+des+"\n";
             }
+
         };
               // dat vong loop la 10 packet
         pcap.loop(10, printSummaryHandler, "jSpam Mail Detector!");
+
          pcap.close();
-        areaData.setText(result);
+        
     }//GEN-LAST:event_btCaptureMouseClicked
 
     private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
@@ -452,6 +530,8 @@ public class GuiJnetPcapView extends FrameView {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTable1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JProgressBar progressBar;
