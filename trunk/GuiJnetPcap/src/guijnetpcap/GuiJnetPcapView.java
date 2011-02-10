@@ -432,21 +432,19 @@ public class GuiJnetPcapView extends FrameView {
           //add filter in pcap
        //   pcap.setFilter(filter);
           //Create a loop
-          JBufferHandler<String> printSummaryHandler = new JBufferHandler<String>()
+          PcapPacketHandler<String> jpacketHandler = new PcapPacketHandler<String>()
           {
             Tcp tcp = new Tcp();
             Ip4 ip = new Ip4();
             String ip_address = null;
             String des;
             String src;
-            final PcapPacket packet = new PcapPacket(JMemory.POINTER);
+          //  final PcapPacket packet = new PcapPacket(JMemory.POINTER);
              ArrayList<PcapPacket> listPacket = new ArrayList<PcapPacket>();
-            public void nextPacket(PcapHeader header, JBuffer buffer, String user)
+           public void nextPacket(PcapPacket packet, String user)
             {
                 //add packet into arraylist
-               packet.peer(buffer);
-                packet.getCaptureHeader().peerTo(header, 0);
-                packet.scan(Ethernet.ID);
+              
                 this.listPacket.add(packet);
 
                 Object[] col={"#",
@@ -462,10 +460,10 @@ public class GuiJnetPcapView extends FrameView {
                 for(int i=0;i<this.listPacket.size();i++)
                 {
                     PcapPacket Packet= this.listPacket.get(i);
-                    System.out.println(this.listPacket.size());
-                    Timestamp timestamp =  new Timestamp(header.timestampInMillis());
+                
+                //    Timestamp timestamp =  new Timestamp(header.timestampInMillis());
                     obj[i][0]=Packet.getFrameNumber();
-                    obj[i][1]=timestamp.toString();
+                    //obj[i][1]=timestamp.toString();
                       Packet.getHeader(ip);
                     if(Packet.hasHeader(ip))
                     {
@@ -486,10 +484,10 @@ public class GuiJnetPcapView extends FrameView {
                 jTable1.setModel(model);
 
 
-               Timestamp timestamp =  new Timestamp(header.timestampInMillis());
-                packet.peer(buffer);
-                packet.getCaptureHeader().peerTo(header, 0);
-                packet.scan(Ethernet.ID);
+             
+             //   packet.peer(buffer);
+            //    packet.getCaptureHeader().peerTo(header, 0);
+            //    packet.scan(Ethernet.ID);
 
                 packet.getHeader(ip);
                 if (packet.hasHeader(ip) )
@@ -502,13 +500,14 @@ public class GuiJnetPcapView extends FrameView {
                     des = new Integer(tcp.destination()).toString();
                     src = new Integer(tcp.source()).toString();
                 }
-                 result +=timestamp.toString()+packet.getFrameNumber()+"||"+ip_address+"||"+src+"||"+des+"\n";
+                 result +=packet.getFrameNumber()+"||"+ip_address+"||"+src+"||"+des+"\n";
             }
 
         };
+        
               // dat vong loop la 10 packet
-        pcap.loop(10, printSummaryHandler, "jSpam Mail Detector!");
-
+        pcap.loop(10, jpacketHandler, "jSpam Mail Detector!");
+        areaData.setText(result);
          pcap.close();
         
     }//GEN-LAST:event_btCaptureMouseClicked
