@@ -208,9 +208,6 @@ public class GuiJnetPcapView extends FrameView {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btCaptureMouseClicked(evt);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                btCaptureMousePressed(evt);
-            }
         });
 
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
@@ -227,6 +224,7 @@ public class GuiJnetPcapView extends FrameView {
         jLabel3.setName("jLabel3"); // NOI18N
 
         jButton2.setText(resourceMap.getString("jButton2.text")); // NOI18N
+        jButton2.setEnabled(false);
         jButton2.setName("jButton2"); // NOI18N
         jButton2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -318,8 +316,8 @@ public class GuiJnetPcapView extends FrameView {
                 .addGap(31, 31, 31)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(177, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(331, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
@@ -416,11 +414,6 @@ public class GuiJnetPcapView extends FrameView {
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btCaptureMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMousePressed
-
-      
-    }//GEN-LAST:event_btCaptureMousePressed
-
     private void cbbDeviceItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbbDeviceItemStateChanged
         btCapture.setEnabled(true);
         //get code name of NIC when item changed
@@ -430,42 +423,63 @@ public class GuiJnetPcapView extends FrameView {
     }//GEN-LAST:event_cbbDeviceItemStateChanged
 
     private void jButton1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MousePressed
-        // TODO add your handling code here:
-        pcap.close();
+        // TODO add your handling code here:        
     }//GEN-LAST:event_jButton1MousePressed
 
     private void btCaptureMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMouseClicked
         // TODO add your handling code here:
           btCapture.setEnabled(false);
-        //prameter of pcap.openlive
-        int snaplen =64*2048;
+          jButton2.setEnabled(true);          
+          thread_cap.start();
+                 
+    }//GEN-LAST:event_btCaptureMouseClicked
+
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        // TODO add your handling code here:
+         
+          
+    }//GEN-LAST:event_jButton1MouseClicked
+
+    private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MouseClicked
+        // TODO add your handling code here:
+        btCapture.setEnabled(true);
+        jButton2.setEnabled(false);
+        pcap.close();
+        thread_cap.stop();
+        
+    }//GEN-LAST:event_jButton2MouseClicked
+
+    Runnable runable_cap = new Runnable() {
+
+        public void run() {
+           int snaplen =64*2048;
         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
         int timeout= 10*1000;
         //end
         //parameter of filter
         PcapBpfProgram filter = new PcapBpfProgram();
-        //String expression = "tcp port 80 or port 25";
+        String expression = "tcp port 80 or port 25";
         int optimize = 0;         // 0 = false
         int netmask = 0xFFFFFF00; // 255.255.255.0
         //end
 
-      
-        
+
+
         //open live to capture packet
          pcap= Pcap.openLive(codeName, snaplen, promicious, timeout, err);
          //edit filter
-      //   if(txtDescrip.getText()!=null)
-      //   {
-      //      expression=expression+" or host "+txtDescrip.getText();
-      //      System.out.println(expression);
-     //    }
-     //    if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
-     //       {
-                
-       //         return;
-      //      }
+         if(!txtDescrip.getText().equals(""))
+         {
+            expression=expression+" or host "+txtDescrip.getText();
+         }
+         System.out.println(expression);
+        if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
+            {
+
+                return;
+           }
           //add filter in pcap
-       //   pcap.setFilter(filter);
+          pcap.setFilter(filter);
           //Create a loop
           PcapPacketHandler<String> jpacketHandler = new PcapPacketHandler<String>()
           {
@@ -489,15 +503,15 @@ public class GuiJnetPcapView extends FrameView {
                         "Port Source",
                         "Ip Destination",
                         "Port Destination"
-                       
+
                        };
                 Object[][] obj = new Object[this.listPacket.size()][col.length];
-             
+
                 //Create loop to add value into Jtable
                 for(int i=0;i<this.listPacket.size();i++)
                 {
                     PcapPacket Packet= this.listPacket.get(i);
-                
+
                     Timestamp timestamp =  new Timestamp(Packet.getCaptureHeader().timestampInMillis());
                     obj[i][0]=Packet.getFrameNumber();
                     obj[i][1]=timestamp.toString();
@@ -517,15 +531,15 @@ public class GuiJnetPcapView extends FrameView {
                     }
                     else if (Packet.hasHeader(udp))
                     {
-                         obj[i][3] = new Integer(udp.destination()).toString();
+                        obj[i][3] = new Integer(udp.destination()).toString();
                         obj[i][5] = new Integer(udp.source()).toString();
                     }
                        //obj[i][6]=Packet.toString();
                 }
                TableModel model= new TableModel(obj, col);
-             
+
                 jTable1.setModel(model);
- 
+
              //   packet.peer(buffer);
             //    packet.getCaptureHeader().peerTo(header, 0);
             //    packet.scan(Ethernet.ID);
@@ -544,29 +558,18 @@ public class GuiJnetPcapView extends FrameView {
                  result +=packet.getFrameNumber()+"||"+ip_address+"||"+src+"||"+des+"\n";
                  System.out.println(result);
                  areaData.setText(result);
-            }
-
+                 areaData.updateUI();
+                 areaData.validate();
+            }            
         };
-      
+
               // dat vong loop la 10 packet
-        pcap.loop(10, jpacketHandler, "jSpam Mail Detector!");
-        areaData.setText(result);
-         pcap.close();
-        
-    }//GEN-LAST:event_btCaptureMouseClicked
+        pcap.loop(Pcap.LOOP_INFINATE, jpacketHandler, "jSpam Mail Detector!");
+        //pcap.close();
+        }
+    };
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
-        // TODO add your handling code here:
-         
-          
-    }//GEN-LAST:event_jButton1MouseClicked
-
-    private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MouseClicked
-        // TODO add your handling code here:
-        btCapture.setEnabled(true);
-    }//GEN-LAST:event_jButton2MouseClicked
-
-    
+    Thread thread_cap = new Thread(runable_cap); //Tao thread captrue goi tin
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea areaData;
     private javax.swing.JButton btCapture;
