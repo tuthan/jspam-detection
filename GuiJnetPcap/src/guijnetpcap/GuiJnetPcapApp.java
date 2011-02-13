@@ -4,6 +4,7 @@
 
 package guijnetpcap;
 
+import javax.swing.table.DefaultTableModel;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -44,4 +45,5 @@ public class GuiJnetPcapApp extends SingleFrameApplication {
         launch(GuiJnetPcapApp.class, args);
 
     }
+
 }
