@@ -160,15 +160,6 @@ public class GuiJnetPcapView extends FrameView {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
                 {null, null, null, null, null}
             },
             new String [] {
@@ -279,8 +270,11 @@ public class GuiJnetPcapView extends FrameView {
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
+        areaData.setBackground(resourceMap.getColor("areaData.background")); // NOI18N
         areaData.setColumns(20);
         areaData.setEditable(false);
+        areaData.setForeground(resourceMap.getColor("areaData.foreground")); // NOI18N
+        areaData.setLineWrap(true);
         areaData.setRows(5);
         areaData.setName("areaData"); // NOI18N
         jScrollPane1.setViewportView(areaData);
@@ -369,9 +363,10 @@ public class GuiJnetPcapView extends FrameView {
     private void btCaptureMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btCaptureMouseClicked
         // TODO add your handling code here:
           btCapture.setEnabled(false);
-          jButton2.setEnabled(true);          
+          jButton2.setEnabled(true);
+          jTable1.setModel(md);
           thread_cap.start();
-                 
+
     }//GEN-LAST:event_btCaptureMouseClicked
 
     private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton2MouseClicked
@@ -386,7 +381,7 @@ public class GuiJnetPcapView extends FrameView {
     Runnable runable_cap = new Runnable() {
 
         public void run() {
-           int snaplen =64*2048;
+        int snaplen =64*2048;
         int promicious= Pcap.MODE_NON_PROMISCUOUS ;
         int timeout= 10*1000;
         //end
@@ -395,7 +390,7 @@ public class GuiJnetPcapView extends FrameView {
         String expression = "port 25";
         int optimize = 0;         // 0 = false
         int netmask = 0xFFFFFF00; // 255.255.255.0
-        //end
+         //end
 
 
 
@@ -417,57 +412,29 @@ public class GuiJnetPcapView extends FrameView {
           //Create a loop
           PcapPacketHandler<String> jpacketHandler = new PcapPacketHandler<String>()
           {
-            Tcp tcp = new Tcp();
-            Udp udp = new Udp();
-            Ip4 ip = new Ip4();
-            String ip_address = null;
-            String des;
-            String src;
-        
-             ArrayList<PcapPacket> listPacket = new ArrayList<PcapPacket>();
+            Tcp tcp = new Tcp();            
+            Ip4 ip = new Ip4();            
+            Payload pl = new Payload();                        
+            //ArrayList<PcapPacket> listPacket = new ArrayList<PcapPacket>();
+            int count=1;
            public void nextPacket(PcapPacket packet, String user)
             {
-                //add packet into arraylist
-                
-                Payload pl = new Payload();
+                //add packet into arraylist                
                  if (packet.getHeader(pl)!=null){
                      String t = packet.getHeader(pl).getUTF8String(0, pl.size());
                      if (t.contains("MAIL FROM")||t.contains("MAIL From"))
                      {
-                         this.listPacket.add(packet);
+                         //this.listPacket.add(packet);
                          t = t.substring(11, t.length());
-                         Object[] col={"#",
-                        "Time",
-                        "Ip Source",
-                        "Ip Destination",                        
-                        "Mail From"
-                       };
-                Object[][] obj = new Object[this.listPacket.size()][col.length];
-
-                //Create loop to add value into Jtable
-                for(int i=0;i<this.listPacket.size();i++)
-                {
-                    PcapPacket Packet= this.listPacket.get(i);
-                    Timestamp timestamp =  new Timestamp(Packet.getCaptureHeader().timestampInMillis());
-                    obj[i][0]=i+1;
-                    obj[i][1]=timestamp.toString();
-                    Packet.getHeader(ip);
-                    if(Packet.hasHeader(ip))
-                    {
-                        obj[i][2]=FormatUtils.ip(ip.source());
-                        obj[i][3]=FormatUtils.ip(ip.destination());
-                    }                      
-                        obj[i][4]=t;
-
-
-                }
-               DefaultTableModel model= new DefaultTableModel(obj, col);
-
-                jTable1.setModel(model);
+                         Timestamp timestamp =  new Timestamp(packet.getCaptureHeader().timestampInMillis());
+                         md.addRow(new Object[] {count,timestamp.toString(),FormatUtils.ip(ip.source()),FormatUtils.ip(ip.destination()),t});
+                         count++;
                      }
                  }
-                result+=packet.getFrameNumber()+ packet.toString() + "\n";
-                 areaData.setText(result);
+                result+=packet.getFrameNumber()+ packet.getHeader(tcp).toString()+ packet.getHeader(ip).toString();
+                if (packet.getHeader(pl)!=null)
+                result +=packet.getHeader(pl).toString();
+                areaData.setText(result);
                  
 
             }            
@@ -478,7 +445,13 @@ public class GuiJnetPcapView extends FrameView {
         //pcap.close();
         }
     };
-
+    Object[] col={"#",
+                        "Time",
+                        "Ip Source",
+                        "Ip Destination",
+                        "Mail From"
+                       };
+    DefaultTableModel md = new DefaultTableModel(col, 0);
     Thread thread_cap = new Thread(runable_cap); //Tao thread captrue goi tin
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea areaData;
