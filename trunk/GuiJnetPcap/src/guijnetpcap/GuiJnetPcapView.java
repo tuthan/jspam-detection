@@ -26,7 +26,10 @@ import org.jnetpcap.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.DefaultTableModel;
+import org.jnetpcap.packet.JHeader;
+import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.format.FormatUtils;
+import org.jnetpcap.protocol.JProtocol;
 /**
  * The application's main frame.
  */
@@ -157,26 +160,26 @@ public class GuiJnetPcapView extends FrameView {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "#", "Time", "Ip Source", "PortSource", "Ip Destination", "Port Destination"
+                "#", "Time", "Ip Source", "Ip Destination", "Mail From"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
+                false, false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -197,9 +200,8 @@ public class GuiJnetPcapView extends FrameView {
         jTable1.getColumnModel().getColumn(0).setHeaderValue(resourceMap.getString("jTable1.columnModel.title0")); // NOI18N
         jTable1.getColumnModel().getColumn(1).setHeaderValue(resourceMap.getString("jTable1.columnModel.title1")); // NOI18N
         jTable1.getColumnModel().getColumn(2).setHeaderValue(resourceMap.getString("jTable1.columnModel.title2")); // NOI18N
-        jTable1.getColumnModel().getColumn(3).setHeaderValue(resourceMap.getString("jTable1.columnModel.title3")); // NOI18N
-        jTable1.getColumnModel().getColumn(4).setHeaderValue(resourceMap.getString("jTable1.columnModel.title4")); // NOI18N
-        jTable1.getColumnModel().getColumn(5).setHeaderValue(resourceMap.getString("jTable1.columnModel.title5")); // NOI18N
+        jTable1.getColumnModel().getColumn(3).setHeaderValue(resourceMap.getString("jTable1.columnModel.title4")); // NOI18N
+        jTable1.getColumnModel().getColumn(4).setHeaderValue(resourceMap.getString("jTable1.columnModel.title3")); // NOI18N
 
         jLabel4.setText(resourceMap.getString("jLabel4.text")); // NOI18N
         jLabel4.setName("jLabel4"); // NOI18N
@@ -390,7 +392,7 @@ public class GuiJnetPcapView extends FrameView {
         //end
         //parameter of filter
         PcapBpfProgram filter = new PcapBpfProgram();
-        String expression = "tcp port 110 or port 25";
+        String expression = "port 25";
         int optimize = 0;         // 0 = false
         int netmask = 0xFFFFFF00; // 255.255.255.0
         //end
@@ -402,7 +404,7 @@ public class GuiJnetPcapView extends FrameView {
          //edit filter
          if(!txtDescrip.getText().equals(""))
          {
-            expression=expression+" or host "+txtDescrip.getText();
+            expression=expression+" and host "+txtDescrip.getText();
          }
   
         if (pcap.compile(filter, expression, optimize, netmask) != Pcap.OK)
@@ -415,8 +417,8 @@ public class GuiJnetPcapView extends FrameView {
           //Create a loop
           PcapPacketHandler<String> jpacketHandler = new PcapPacketHandler<String>()
           {
-               Tcp tcp = new Tcp();
-             Udp udp = new Udp();
+            Tcp tcp = new Tcp();
+            Udp udp = new Udp();
             Ip4 ip = new Ip4();
             String ip_address = null;
             String des;
@@ -426,16 +428,19 @@ public class GuiJnetPcapView extends FrameView {
            public void nextPacket(PcapPacket packet, String user)
             {
                 //add packet into arraylist
-
-                this.listPacket.add(packet);
-
-                Object[] col={"#",
+                
+                Payload pl = new Payload();
+                 if (packet.getHeader(pl)!=null){
+                     String t = packet.getHeader(pl).getUTF8String(0, pl.size());
+                     if (t.contains("MAIL FROM")||t.contains("MAIL From"))
+                     {
+                         this.listPacket.add(packet);
+                         t = t.substring(11, t.length());
+                         Object[] col={"#",
                         "Time",
                         "Ip Source",
-                        "Port Source",
-                        "Ip Destination",
-                        "Port Destination"
-
+                        "Ip Destination",                        
+                        "Mail From"
                        };
                 Object[][] obj = new Object[this.listPacket.size()][col.length];
 
@@ -443,56 +448,28 @@ public class GuiJnetPcapView extends FrameView {
                 for(int i=0;i<this.listPacket.size();i++)
                 {
                     PcapPacket Packet= this.listPacket.get(i);
-
                     Timestamp timestamp =  new Timestamp(Packet.getCaptureHeader().timestampInMillis());
-                    obj[i][0]=Packet.getFrameNumber();
+                    obj[i][0]=i+1;
                     obj[i][1]=timestamp.toString();
                     Packet.getHeader(ip);
                     if(Packet.hasHeader(ip))
                     {
                         obj[i][2]=FormatUtils.ip(ip.source());
-                        obj[i][4]=FormatUtils.ip(ip.destination());
+                        obj[i][3]=FormatUtils.ip(ip.destination());
+                    }                      
+                        obj[i][4]=t;
 
-                    }
-                       Packet.getHeader(tcp);
-                        Packet.getHeader(udp);
-                    if (Packet.hasHeader(tcp))
-                    {
-                        obj[i][3] = new Integer(tcp.destination()).toString();
-                        obj[i][5] = new Integer(tcp.source()).toString();
-                    }
-                    else if (Packet.hasHeader(udp))
-                    {
-                        obj[i][3] = new Integer(udp.destination()).toString();
-                        obj[i][5] = new Integer(udp.source()).toString();
-                    }
-              
 
                 }
                DefaultTableModel model= new DefaultTableModel(obj, col);
 
                 jTable1.setModel(model);
-
-                packet.getHeader(ip);
-                if (packet.hasHeader(ip) )
-                {
-                   ip_address = FormatUtils.ip(ip.source())+"||"+FormatUtils.ip(ip.destination());
-                }
-                packet.getHeader(tcp);
-                if (packet.hasHeader(tcp))
-                {
-                    des = new Integer(tcp.destination()).toString();
-                    src = new Integer(tcp.source()).toString();
-                }
-                int length =  ip.length() - ip.hlen() * 4 - tcp.hlen() * 4;
-                byte [] byte_array = packet.getByteArray(0, length);
-                String message = new String(byte_array);
-                 result +=packet.getFrameNumber()+"||"+ip_address+"||"+src+"||"+des+ "||"+ message +"\n";
-                // System.out.println(result);
-                // System.out.println(message);
+                     }
+                 }
+                result+=packet.getFrameNumber()+ packet.toString() + "\n";
                  areaData.setText(result);
-                 //areaData.updateUI();
-                 //areaData.validate();
+                 
+
             }            
         };
 
